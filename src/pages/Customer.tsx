@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, QrCode, ArrowLeft, Shield, CheckCircle } from "lucide-react";
+import { finalABI, CONTRACT_CONFIG } from "@/contractABI";
+import { BrowserProvider, Contract, getDefaultProvider } from "ethers";
 import { useNavigate } from "react-router-dom";
 
 const Customer = () => {
@@ -12,17 +14,48 @@ const Customer = () => {
   const [verificationResult, setVerificationResult] = useState<any>(null);
 
   const handleVerify = () => {
-    // Demo verification result
-    if (productId.trim()) {
-      setVerificationResult({
-        id: productId,
-        name: "Luxury Watch Series X",
-        company: "TimeCorps Inc.",
-        status: "verified",
-        verifiedDate: "2024-01-15",
-        blockchain: "0x1234...5678"
-      });
-    }
+    // Try on-chain verification first
+    if (!productId.trim()) return;
+
+    const verifyChain = async () => {
+      try {
+        let provider;
+        if ((window as any).ethereum) {
+          provider = new BrowserProvider((window as any).ethereum);
+        } else {
+          provider = getDefaultProvider();
+        }
+
+        const contract = new Contract(CONTRACT_CONFIG.contractAddress, finalABI, provider as any);
+
+        const res = await contract.getProduct(productId);
+        // res: [name, description, manufacturer, batchId, imageHash, owner, createdAt, isActive, metadata]
+        const [name, description, manufacturer, batchId, imageHash, owner, createdAt, isActive, metadata] = res as any;
+
+        setVerificationResult({
+          id: productId,
+          name,
+          company: manufacturer,
+          status: isActive ? "verified" : "deactivated",
+          verifiedDate: new Date(Number(createdAt) * 1000).toISOString().split("T")[0],
+          blockchain: owner,
+          imageHash,
+          metadata
+        });
+      } catch (err) {
+        // If contract call fails or product not found, mark as fake/not registered
+        setVerificationResult({
+          id: productId,
+          name: "",
+          company: "",
+          status: "not-registered",
+          verifiedDate: "",
+          blockchain: "",
+        });
+      }
+    };
+
+    void verifyChain();
   };
 
   return (
@@ -81,7 +114,7 @@ const Customer = () => {
             </div>
           </Card>
 
-          {verificationResult && (
+          {verificationResult && verificationResult.status === "verified" && (
             <Card className="p-8 bg-gradient-card border border-green-500/20 shadow-cyber">
               <div className="text-center mb-6">
                 <div className="w-16 h-16 mx-auto bg-green-500/20 rounded-full flex items-center justify-center mb-4">
@@ -126,6 +159,20 @@ const Customer = () => {
                   </div>
                 </div>
               </div>
+            </Card>
+          )}
+
+          {verificationResult && verificationResult.status === "deactivated" && (
+            <Card className="p-6 bg-gradient-card border border-yellow-500/20">
+              <h3 className="text-lg font-semibold text-yellow-500 mb-2">Product Deactivated</h3>
+              <p className="text-sm text-muted-foreground">This product has been deactivated by the owner and should not be trusted.</p>
+            </Card>
+          )}
+
+          {verificationResult && verificationResult.status === "not-registered" && (
+            <Card className="p-6 bg-gradient-card border border-red-500/20">
+              <h3 className="text-lg font-semibold text-red-500 mb-2">Product Not Registered</h3>
+              <p className="text-sm text-muted-foreground">No matching product found on-chain — this may be a counterfeit.</p>
             </Card>
           )}
 

@@ -2,10 +2,15 @@ import RoleCard from "@/components/RoleCard";
 import WalletConnect from "@/components/WalletConnect";
 import { Package, Search, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useWallet } from "@/hooks/useWallet";
 import { Button } from "@/components/ui/button";
+import QrScanner from "../components/QrScanner";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
+  const [qrText, setQrText] = useState<string>("");
+  const { isConnected, connectWallet } = useWallet();
 
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -40,6 +45,19 @@ const UserDashboard = () => {
           </div>
         </div>
 
+        <div className="max-w-md mx-auto mt-8">
+          <h3 className="text-lg font-medium mb-2">Scan QR</h3>
+          {isConnected ? (
+            <QrScanner onScan={(t) => setQrText(t)} onError={(e) => console.error(e)} />
+          ) : (
+            <div className="p-4 text-center">
+              <p className="text-sm text-muted-foreground mb-3">Connect your wallet to enable QR scanning.</p>
+              <Button variant="hero" size="sm" onClick={connectWallet}>Connect Wallet</Button>
+            </div>
+          )}
+          {qrText && <p className="mt-4 break-words">Scanned: {qrText}</p>}
+        </div>
+
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <RoleCard
             title="Product Owner"
@@ -70,7 +88,7 @@ const UserDashboard = () => {
 
         <div className="text-center mt-16">
           <p className="text-sm text-muted-foreground flex items-center justify-center">
-            <div className="w-2 h-2 bg-primary rounded-full mr-2 animate-cyber-pulse"></div>
+            <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
             Powered by blockchain technology for maximum security and transparency
           </p>
         </div>

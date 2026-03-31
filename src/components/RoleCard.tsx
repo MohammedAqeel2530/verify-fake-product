@@ -13,7 +13,7 @@ interface RoleCardProps {
 
 const RoleCard = ({ title, description, features, icon: Icon, buttonText, onEnter }: RoleCardProps) => {
   return (
-    <Card className="p-8 bg-gradient-card border border-primary/20 shadow-card hover:shadow-cyber transition-all duration-300 transform hover:scale-105 animate-float">
+    <Card className="p-8 bg-gradient-card border border-primary/20 shadow-card hover:shadow-cyber transition-all duration-300 transform hover:scale-105">
       <div className="text-center space-y-6">
         <div className="w-16 h-16 mx-auto bg-gradient-primary rounded-lg flex items-center justify-center shadow-cyber">
           <Icon className="w-8 h-8 text-primary-foreground" />
@@ -27,7 +27,7 @@ const RoleCard = ({ title, description, features, icon: Icon, buttonText, onEnte
         <ul className="space-y-2 text-left">
           {features.map((feature, index) => (
             <li key={index} className="flex items-center text-sm text-muted-foreground">
-              <div className="w-2 h-2 bg-primary rounded-full mr-3 animate-cyber-pulse"></div>
+              <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
               {feature}
             </li>
           ))}

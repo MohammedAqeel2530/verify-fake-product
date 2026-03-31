@@ -75,7 +75,7 @@ const WalletConnect = () => {
           >
             {isLoading ? (
               <div className="flex items-center">
-                <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
+                <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full mr-2" />
                 Connecting...
               </div>
             ) : (

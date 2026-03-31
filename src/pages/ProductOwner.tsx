@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Package, QrCode, TrendingUp, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import QrCodeGenerator from "../components/QrCodeGenerator";
 // Add this function after your imports and before your component definitions
 const getContract = async () => {
   const provider = new ethers.BrowserProvider(window.ethereum);
@@ -60,7 +61,22 @@ setContract(contractInstance);
     }
 
     try {
-      const tx = await contract.createProduct(productName, productDesc);
+      // ABI expects: (productId, name, description, manufacturer, batchId, imageHash, metadata[])
+      const productId = `PROD-${Date.now()}`;
+      const manufacturer = account ?? "";
+      const batchId = "";
+      const imageHash = "";
+      const metadata: string[] = [];
+
+      const tx = await contract.createProduct(
+        productId,
+        productName,
+        productDesc,
+        manufacturer,
+        batchId,
+        imageHash,
+        metadata
+      );
       await tx.wait();
       alert("✅ Product uploaded to blockchain!");
       setProductName("");
@@ -205,10 +221,7 @@ setContract(contractInstance);
             <p className="text-muted-foreground mb-6">
               Create QR codes for your verified products
             </p>
-            <Button variant="hero" size="lg" className="w-full">
-              <QrCode className="w-5 h-5 mr-2" />
-              Generate QR Code
-            </Button>
+            <QrCodeGenerator />
           </Card>
         </div>
 
